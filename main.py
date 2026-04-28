@@ -1,77 +1,89 @@
 import sys
 import os
 
-USAGE = """Usage:
-python3 todo.py view <filename>
-python3 todo.py add <filename> <task>
-python3 todo.py remove <filename> <task>
-"""
 
-def read_tasks(filename):
-    if not os.path.exists(filename):
+def read_tasks(file_path):
+    if not os.path.exists(file_path):
+        print(f"File {file_path} not found! Returning an empty to-do list.")
         return []
 
-    with open(filename, "r") as file:
+    with open(file_path, "r") as file:
         return [line.strip() for line in file if line.strip()]
 
-def write_tasks(filename, tasks):
-    with open(filename, "w") as file:
+
+def write_tasks(file_path, tasks):
+    with open(file_path, "w") as file:
         for task in tasks:
             file.write(task + "\n")
+
+
+def print_tasks(tasks):
+    print("Tasks:")
+    for task in tasks:
+        print(task)
+
 
 def main():
     args = sys.argv[1:]
 
     if len(args) == 0:
+        print("Insufficient arguments provided!")
         return
 
-    command = args[0]
-
-    if command in ["help", "--help", "-h"]:
-        print(USAGE)
+    if args[0] in ["help", "--help", "-h"]:
+        print("Usage: python main.py <file_path> <command> [arguments]...")
         return
 
-    if len(args) < 2:
-        print(USAGE)
+    if len(args) == 1:
         return
 
-    filename = args[1]
+    file_path = args[0]
+    commands = args[1:]
 
-    if command == "view":
-        tasks = read_tasks(filename)
-        for task in tasks:
-            print(task)
-        return
+    tasks = read_tasks(file_path)
+    changed = False
 
-    elif command == "add":
-        if len(args) < 3:
-            print("Missing task")
-            return
+    i = 0
+    while i < len(commands):
+        command = commands[i]
 
-        task = " ".join(args[2:])
-        tasks = read_tasks(filename)
-        tasks.append(task)
-        write_tasks(filename, tasks)
-        return
+        if command == "view":
+            print_tasks(tasks)
+            i += 1
 
-    elif command == "remove":
-        if len(args) < 3:
-            print("Missing task")
-            return
+        elif command == "add":
+            if i + 1 >= len(commands):
+                print('Task description required for "add".')
+                return
 
-        task = " ".join(args[2:])
-        tasks = read_tasks(filename)
+            task = commands[i + 1]
+            tasks.append(task)
+            changed = True
+            print(f'Task "{task}" added.')
+            i += 2
 
-        if task in tasks:
-            tasks.remove(task)
-            write_tasks(filename, tasks)
+        elif command == "remove":
+            if i + 1 >= len(commands):
+                print('Task description required for "remove".')
+                return
+
+            task = commands[i + 1]
+
+            if task in tasks:
+                tasks.remove(task)
+                changed = True
+                print(f'Task "{task}" removed.')
+            else:
+                print(f'Task "{task}" not found.')
+
+            i += 2
+
         else:
-            print("Task not found")
-        return
+            print("Command not found!")
+            return
 
-    else:
-        print("Invalid command")
-        return
+    if changed:
+        write_tasks(file_path, tasks)
 
 
 if __name__ == "__main__":
