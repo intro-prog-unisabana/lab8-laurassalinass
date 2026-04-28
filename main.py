@@ -1,67 +1,78 @@
-"""Laboratorio 8 - CLI del gestor de tareas."""
-
 import sys
-from todo_manager import read_todo_file, write_todo_file
-HELP_MESSAGE = """Usage: python main.py <file_path> <command> [arguments]...
-Commands:
- add "task" - Add a task to the list.
- remove "task" - Remove a task from the list.
- view - Display all tasks.
-Examples:
- python main.py tasks.txt add "Buy groceries"
- python main.py tasks.txt remove "Do laundry"
- python main.py tasks.txt view
- python main.py tasks.txt add "Call mom" remove "Take out trash" view"""
+import os
 
-try:
-    if len(sys.argv) > 1 and sys.argv[1] == "--help":
-        print(HELP_MESSAGE)
-        sys.exit(0)
+USAGE = """Usage:
+python3 todo.py view <filename>
+python3 todo.py add <filename> <task>
+python3 todo.py remove <filename> <task>
+"""
 
-    if len(sys.argv)<2:
-        raise IndexError ("Insufficient arguments provided!")
-    
-    file_path = sys.argv[1]
-    args= sys.argv[2]
+def read_tasks(filename):
+    if not os.path.exists(filename):
+        return []
 
-    tasks= read_todo_file(file_path)
+    with open(filename, "r") as file:
+        return [line.strip() for line in file if line.strip()]
 
-    if not args:
-        sys.exit(0)
+def write_tasks(filename, tasks):
+    with open(filename, "w") as file:
+        for task in tasks:
+            file.write(task + "\n")
 
-    i=0
-    while i<len(args):
-        command= args[i]
+def main():
+    args = sys.argv[1:]
 
-        if command== "view":
-            print("Tasks:")
-            for task in tasks:
-                print(task)
-            i+= 1
+    if len(args) == 0:
+        return
 
-        elif command == "add":
-            if i + 1 >= len(args):
-                raise IndexError('Task description required for "add".')
-            task_desc = args[i + 1]
-            tasks.append(task_desc)
-            print(f'Task "{task_desc}" added.')
-            i += 2
- 
-        elif command == "remove":
-            if i + 1 >= len(args):
-                raise IndexError('Task description required for "remove".')
-            task_desc = args[i + 1]
-            try:
-                tasks.remove(task_desc)
-                print(f'Task "{task_desc}" removed.')
-            except ValueError:
-                print(f'Task "{task_desc}" not found.')
-            i += 2
+    command = args[0]
+
+    if command in ["help", "--help", "-h"]:
+        print(USAGE)
+        return
+
+    if len(args) < 2:
+        print(USAGE)
+        return
+
+    filename = args[1]
+
+    if command == "view":
+        tasks = read_tasks(filename)
+        for task in tasks:
+            print(task)
+        return
+
+    elif command == "add":
+        if len(args) < 3:
+            print("Missing task")
+            return
+
+        task = " ".join(args[2:])
+        tasks = read_tasks(filename)
+        tasks.append(task)
+        write_tasks(filename, tasks)
+        return
+
+    elif command == "remove":
+        if len(args) < 3:
+            print("Missing task")
+            return
+
+        task = " ".join(args[2:])
+        tasks = read_tasks(filename)
+
+        if task in tasks:
+            tasks.remove(task)
+            write_tasks(filename, tasks)
         else:
-        raise ValueError("Command not found!")
-    
-    write_todo_file(file_path, tasks)
-except IndexError as e:
-    print(e)
-except ValueError as e:
-    print(e)
+            print("Task not found")
+        return
+
+    else:
+        print("Invalid command")
+        return
+
+
+if __name__ == "__main__":
+    main()
