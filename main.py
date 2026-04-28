@@ -5,14 +5,18 @@ import os
 def read_tasks(file_path):
     if not os.path.exists(file_path):
         print(f"File {file_path} not found! Returning an empty to-do list.")
+
+        with open(file_path, "w", encoding="utf-8") as file:
+            pass
+
         return []
 
-    with open(file_path, "r") as file:
+    with open(file_path, "r", encoding="utf-8") as file:
         return [line.strip() for line in file if line.strip()]
 
 
 def write_tasks(file_path, tasks):
-    with open(file_path, "w") as file:
+    with open(file_path, "w", encoding="utf-8") as file:
         for task in tasks:
             file.write(task + "\n")
 
@@ -23,6 +27,14 @@ def print_tasks(tasks):
         print(task)
 
 
+def print_help():
+    print("Usage: python main.py <file_path> <command> [arguments]...")
+    print('Commands:')
+    print('  view')
+    print('  add "task"')
+    print('  remove "task"')
+
+
 def main():
     args = sys.argv[1:]
 
@@ -31,7 +43,7 @@ def main():
         return
 
     if args[0] in ["help", "--help", "-h"]:
-        print("Usage: python main.py <file_path> <command> [arguments]...")
+        print_help()
         return
 
     if len(args) == 1:
@@ -44,6 +56,7 @@ def main():
     changed = False
 
     i = 0
+
     while i < len(commands):
         command = commands[i]
 
