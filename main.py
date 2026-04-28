@@ -38,3 +38,30 @@ try:
             for task in tasks:
                 print(task)
             i+= 1
+
+        elif command == "add":
+            if i + 1 >= len(args):
+                raise IndexError('Task description required for "add".')
+            task_desc = args[i + 1]
+            tasks.append(task_desc)
+            print(f'Task "{task_desc}" added.')
+            i += 2
+ 
+        elif command == "remove":
+            if i + 1 >= len(args):
+                raise IndexError('Task description required for "remove".')
+            task_desc = args[i + 1]
+            try:
+                tasks.remove(task_desc)
+                print(f'Task "{task_desc}" removed.')
+            except ValueError:
+                print(f'Task "{task_desc}" not found.')
+            i += 2
+        else:
+        raise ValueError("Command not found!")
+    
+    write_todo_file(file_path, tasks)
+except IndexError as e:
+    print(e)
+except ValueError as e:
+    print(e)
